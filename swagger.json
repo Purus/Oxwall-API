@@ -1,0 +1,216 @@
+# Oxwall API Specs
+swagger: '2.0'
+
+info:
+  title: Oxwall REST API
+  description: Extending Oxwall Beyond The Web
+  version: "1.0.0"
+  contact :
+    name: "Purusothaman Ramanujam"
+    url: "http://Purusothaman.Me"
+    email: "purushoth.r@gmail.com"
+    
+# the domain of the service
+host: oxwall.com
+
+# array of all schemes that your API supports
+schemes:
+  - "http"
+  - "https"
+  
+securityDefinitions:
+  UserSecurity:
+    type: apiKey
+    name: apiKey
+    description: "When you sign up for RESTfull service, you are given your API key."
+    in: query
+    
+security:
+  - UserSecurity: [] 
+  
+# will be prefixed to all paths
+basePath: /api
+
+produces:
+  - application/json
+  - application/xml
+  
+responses: 
+  AccessForbidden: 
+    description: "Access forbidden, invalid API Key was used"
+    schema: 
+      $ref: "#/definitions/Error"
+  InvalidDataError: 
+    description: "Invalid data was sent"
+    schema: 
+      $ref: "#/definitions/Error"
+      
+paths:
+  /site/info:
+    get:
+      summary: "Get generic information about the website"
+      operationId: getSiteInfo
+      description: |
+        The endpoint returns site related information like URL, website name, tagline, logo URL and etc.
+      tags:
+        - "Config"
+      responses:
+        200:
+          description: "A list of all website information"
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/SiteInfo'
+        401:
+          $ref: "#/responses/AccessForbidden"  
+              
+  /users:
+    get:
+      summary: "Get all Users"
+      operationId: getAllUsers
+      description: |
+        The Users endpoint returns all users available. The response includes all user information like display name, user name, email and etc. Supports paging.
+      tags:
+        - "Users"
+      parameters:
+        - name: page
+          in: query
+          description: "Page numbere to fetch data from. Starts with 0."
+          required: false
+          type: integer
+          format: int32        
+        - name: limit
+          in: query
+          description: "Maximum entries to return at one time (max 25)"
+          required: false
+          type: integer
+          format: int32        
+      responses:
+        200:
+          description: "An paged list of users"
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/User'
+              
+  /users/name/{name}:
+    get:
+      summary: "Get information for a specific user identified by user name"
+      operationId: getUserByUsername
+      tags:
+        - "Users"
+      parameters:
+        - name: name
+          in: path
+          required: true
+          description: The user name of the user to retrieve
+          type: string
+      responses:
+        200:
+          description: Expected response to a valid request
+          schema:
+            $ref: '#/definitions/User'
+        422:
+          $ref: "#/responses/InvalidDataError"            
+            
+  /users/id/{id}:
+    get:
+      summary: "Get information for a specific user identified by user id"
+      operationId: getUserById
+      tags:
+        - "Users"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The unique Id of the user to retrieve
+          type: string
+      responses:
+        "200":
+          description: Expected response to a valid request
+          schema:
+            $ref: '#/definitions/User'
+        422:
+          $ref: "#/responses/InvalidDataError"  
+      
+  /users/email/{email}:
+    get:
+      summary: "Get information for a specific user identified by user email address"
+      operationId: getUserByEmail
+      tags:
+        - "Users"
+      parameters:
+        - name: email
+          in: path
+          required: true
+          description: The email address of the user to retrieve
+          type: string
+      responses:
+        "200":
+          description: Expected response to a valid request
+          schema:
+            $ref: '#/definitions/User'
+        422:
+          $ref: "#/responses/InvalidDataError"  
+            
+definitions:
+  SiteInfo:
+    type: object
+    properties:
+      site_url:
+        type: string
+        description: URL of the website
+      site_name:
+        type: string
+        description: Name of the website
+      site_tag:
+        type: string
+        description: Tagline of the website
+      site_logo:
+        type: string
+        description: URL of the website logo 
+  
+  User:
+    type: object
+    properties:
+      id:
+        type: string
+        description: Unique identifier representing a specific user
+      user_name:
+        type: string
+        description: User name of the user
+      display_name:
+        type: string
+        description: Display name of the user
+      avatar_url:
+        type: string
+        description: URL of the user's avatar image     
+      join_timestamp:
+        type: string
+        format: dateTime
+        description: Timestamp when user joined the website
+      activity_timestamp:
+        type: string
+        format: dateTime        
+        description: Timestamp of the last user activity
+      join_ip:
+        type: string
+        format: ipv4
+        description: IP address of the user while joining        
+      email_verified:
+        type: integer
+        description: Whether user has verified email address
+      account_type:
+        type: string
+        description: Account type of the user       
+ 
+  Error:
+    required:
+      - code
+      - message
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string       
