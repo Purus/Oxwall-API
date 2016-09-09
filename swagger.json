@@ -205,6 +205,7 @@ definitions:
         description: Account type of the user       
  
   Error:
+    type: object
     required:
       - code
       - message
